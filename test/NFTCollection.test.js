@@ -1,12 +1,17 @@
 const { expectRevert } = require('@openzeppelin/test-helpers');
 
+
 const NFTCollection = artifacts.require('./NFTCollection.sol');
 
 contract('NFTCollection', (accounts) => {
   let contract;
+  let nftOwner; // The original owner of the asset e.g. the Artist
+  let feeReceiver; // The marketplace provider
 
   before(async () => {
-    contract = await NFTCollection.new();
+      feeReceiver = accounts[0];
+      nftOwner = accounts[1];
+      contract = await NFTCollection.new(nftOwner);
   });
 
   describe('deployment', () => {

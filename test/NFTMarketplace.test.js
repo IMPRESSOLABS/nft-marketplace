@@ -1,15 +1,22 @@
 const { expectRevert } = require('@openzeppelin/test-helpers');
 const { assertion } = require('@openzeppelin/test-helpers/src/expectRevert');
 
+
 const NFTCollection = artifacts.require('./NFTCollection.sol');
 const NFTMarketplace = artifacts.require('./NFTMarketplace.sol');
+
 
 contract('NFTMarketplace', (accounts) => {
   let nftContract;
   let mktContract;
+  let nftOwner; // The original owner of the asset e.g. the Artist
+  let feeReceiver; // The marketplace provider
 
   before(async () => {
-    nftContract = await NFTCollection.new();
+    feeReceiver = accounts[0];
+    nftOwner = accounts[1];
+
+    nftContract = await NFTCollection.new(nftOwner);
 
     const NFTaddress = nftContract.address;
     mktContract = await NFTMarketplace.new(NFTaddress);
@@ -140,5 +147,23 @@ contract('NFTMarketplace', (accounts) => {
       assert.equal(event.user, accounts[0]);
       assert.equal(event.amount.toNumber(), 10);
     });
+
+    it('Pay the correct royalties amount and emits Event', async() => {
+      console.log(nftContract);
+      await nftContract.release(nftOwner);
+      const fundsBefore = await mktContract.userFunds(nftOwner);
+      const result = await mktContract.claimFunds({ from: nftOwner });
+      const fundsAfter = await mktContract.userFunds(nftOwner);
+      assert.equal(fundsBefore.toNumber(), 10);
+      assert.equal(fundsAfter.toNumber(), 0);
+
+      const log = result.logs[0];
+      assert.equal(log.event, 'ClaimRoyalties');
+      const event = log.args;
+      assert.equal(event.user, accounts[0]);
+      assert.equal(event.amount.toNumber(), 10);
+    });
+
   });
+
 });

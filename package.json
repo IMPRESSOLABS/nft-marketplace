@@ -13,15 +13,20 @@
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.1",
     "react-dom": "^17.0.2",
-    "react-scripts": "^4.0.3",
-    "web3": "^1.4.0"
+    "react-scripts": "^4.0.3"
   },
   "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.5",
+    "@nomiclabs/hardhat-truffle5": "^2.0.5",
+    "@nomiclabs/hardhat-web3": "^2.0.0",
     "@openzeppelin/contracts": "^4.2.0",
     "@openzeppelin/test-helpers": "^0.5.12",
     "dotenv": "^10.0.0",
+    "ethers": "^5.6.0",
+    "hardhat": "^2.9.1",
     "truffle": "^5.3.14",
-    "truffle-hdwallet-provider-privkey": "^0.3.0"
+    "truffle-hdwallet-provider-privkey": "^0.3.0",
+    "web3": "^1.7.1"
   },
   "scripts": {
     "start": "react-scripts start",

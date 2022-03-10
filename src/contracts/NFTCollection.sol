@@ -3,15 +3,22 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "./interfaces/IERC2981.sol";
 
-contract NFTCollection is ERC721, ERC721Enumerable {
+contract NFTCollection is Ownable, ERC721, ERC721Enumerable {
   string[] public tokenURIs;
   mapping(string => bool) _tokenURIExists;
   mapping(uint => string) _tokenIdToTokenURI;
+  // Address of the royalties recipient
+  address private _royaltiesReceiver;
+  // Percentage of each sale to pay as royalties (5% to Owner; 2% to platform provider)
+  uint256 public constant royaltiesPercentage = 7; 
 
-  constructor() 
+  constructor(address initialRoyaltiesReceiver) 
     ERC721("mTC Collection", "mTC") 
   {
+     _royaltiesReceiver = initialRoyaltiesReceiver;
   }
 
   function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721, ERC721Enumerable) {
@@ -35,4 +42,36 @@ contract NFTCollection is ERC721, ERC721Enumerable {
     _safeMint(msg.sender, _id);
     _tokenURIExists[_tokenURI] = true;
   }
+
+  function _burn(uint256 tokenId) internal override(ERC721) {
+      super._burn(tokenId);
+  }
+
+  /// @notice Getter function for _royaltiesReceiver
+  /// @return the address of the royalties recipient
+  function royaltiesReceiver() external returns(address) {
+      return _royaltiesReceiver;
+  }
+
+  /// @notice Changes the royalties' recipient address (in case rights are
+  ///         transferred for instance)
+  /// @param newRoyaltiesReceiver - address of the new royalties recipient
+  function setRoyaltiesReceiver(address newRoyaltiesReceiver)
+  external onlyOwner {
+      require(newRoyaltiesReceiver != _royaltiesReceiver); // dev: Same address
+      _royaltiesReceiver = newRoyaltiesReceiver;
+  }
+
+
+  /// @notice Called with the sale price to determine how much royalty
+  //          is owed and to whom.
+  /// @param _salePrice - sale price of the NFT asset specified by _tokenId
+  /// @return receiver - address of who should be sent the royalty payment
+  /// @return royaltyAmount - the royalty payment amount for _value sale price
+  function royaltyInfo(uint256 _salePrice) external view returns (address receiver, uint256 royaltyAmount) {
+        uint256 _royalties = (_salePrice * royaltiesPercentage) / 100;
+        return (_royaltiesReceiver, _royalties);
+  }
+
+
 }
