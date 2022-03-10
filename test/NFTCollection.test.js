@@ -11,7 +11,7 @@ contract('NFTCollection', (accounts) => {
   before(async () => {
       feeReceiver = accounts[0];
       nftOwner = accounts[1];
-      contract = await NFTCollection.new(nftOwner);
+      contract = await NFTCollection.new(nftOwner, [nftOwner, feeReceiver]);
   });
 
   describe('deployment', () => {

@@ -31,7 +31,7 @@ contract NFTMarketplace {
   event OfferCancelled(uint offerId, uint id, address owner);
   event ClaimFunds(address user, uint amount);
 
-  constructor(address _nftCollection) {
+  constructor(address payable  _nftCollection) {
     nftCollection = NFTCollection(_nftCollection);
   }
   

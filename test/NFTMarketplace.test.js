@@ -16,7 +16,7 @@ contract('NFTMarketplace', (accounts) => {
     feeReceiver = accounts[0];
     nftOwner = accounts[1];
 
-    nftContract = await NFTCollection.new(nftOwner);
+    nftContract = await NFTCollection.new(nftOwner, [nftOwner, feeReceiver]);
 
     const NFTaddress = nftContract.address;
     mktContract = await NFTMarketplace.new(NFTaddress);

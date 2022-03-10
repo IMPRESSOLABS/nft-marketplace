@@ -37,8 +37,8 @@
       ]
     },
     "C:\\dev\\nft-marketplace\\src\\contracts\\NFTCollection.sol": {
-      "lastModificationDate": 1646895199595,
-      "contentHash": "c188f193bba2a29ee26dd7cafa784843",
+      "lastModificationDate": 1646901900857,
+      "contentHash": "3b0c13f2104da32b636419b64d84b062",
       "sourceName": "src/contracts/NFTCollection.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -67,6 +67,7 @@
         "@openzeppelin/contracts/token/ERC721/ERC721.sol",
         "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol",
         "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/finance/PaymentSplitter.sol",
         "./interfaces/IERC2981.sol"
       ],
       "versionPragmas": [
@@ -481,8 +482,8 @@
       ]
     },
     "C:\\dev\\nft-marketplace\\src\\contracts\\NFTMarketplace.sol": {
-      "lastModificationDate": 1646879037677,
-      "contentHash": "d02d08d2fccbbfc00efec2702b622899",
+      "lastModificationDate": 1646902585847,
+      "contentHash": "a8d42056388aaba94bcee7a8f52ea2e7",
       "sourceName": "src/contracts/NFTMarketplace.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -518,7 +519,7 @@
       ]
     },
     "C:\\dev\\nft-marketplace\\src\\contracts\\interfaces\\IERC2981.sol": {
-      "lastModificationDate": 1646891822244,
+      "lastModificationDate": 1646895354599,
       "contentHash": "56714f79f2529eabaecb9216eeaf4e73",
       "sourceName": "src/contracts/interfaces/IERC2981.sol",
       "solcConfig": {
@@ -589,6 +590,80 @@
       ],
       "artifacts": [
         "Ownable"
+      ]
+    },
+    "C:\\dev\\nft-marketplace\\node_modules\\@openzeppelin\\contracts\\finance\\PaymentSplitter.sol": {
+      "lastModificationDate": 1646879219597,
+      "contentHash": "673b4831a2a5e4379d256ab27fdf0340",
+      "sourceName": "@openzeppelin/contracts/finance/PaymentSplitter.sol",
+      "solcConfig": {
+        "version": "0.8.0",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/Address.sol",
+        "../utils/Context.sol",
+        "../utils/math/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "PaymentSplitter"
+      ]
+    },
+    "C:\\dev\\nft-marketplace\\node_modules\\@openzeppelin\\contracts\\utils\\math\\SafeMath.sol": {
+      "lastModificationDate": 1646879220097,
+      "contentHash": "5365090efc586b728719e562ebfed0d6",
+      "sourceName": "@openzeppelin/contracts/utils/math/SafeMath.sol",
+      "solcConfig": {
+        "version": "0.8.0",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "SafeMath"
       ]
     }
   }
