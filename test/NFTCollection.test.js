@@ -11,7 +11,13 @@ contract('NFTCollection', (accounts) => {
   before(async () => {
       feeReceiver = accounts[0];
       nftOwner = accounts[1];
-      contract = await NFTCollection.new(nftOwner, [nftOwner, feeReceiver]);
+      // royalties 5% to Owner and 2% to platform provider
+      const ownerShare = 5;
+      const platformShare = 2;
+      const ownerShareSplit = (ownerShare / (ownerShare + platformShare) * 100);
+      const platformShareSplit = (ownerShare / (ownerShare + platformShare) * 100);
+
+      contract = await NFTCollection.new(nftOwner);
   });
 
   describe('deployment', () => {

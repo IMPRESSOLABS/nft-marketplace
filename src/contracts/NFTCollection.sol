@@ -4,10 +4,9 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 import "./interfaces/IERC2981.sol";
 
-contract NFTCollection is Ownable, ERC721, ERC721Enumerable, PaymentSplitter {
+contract NFTCollection is Ownable, ERC721, ERC721Enumerable {
   string[] public tokenURIs;
   mapping(string => bool) _tokenURIExists;
   mapping(uint => string) _tokenIdToTokenURI;
@@ -16,9 +15,8 @@ contract NFTCollection is Ownable, ERC721, ERC721Enumerable, PaymentSplitter {
   // Percentage of each sale to pay as royalties (5% to Owner; 2% to platform provider)
   uint256 public constant royaltiesPercentage = 7; 
 
-  constructor(address initialRoyaltiesReceiver, address[] memory _payees, uint256[] memory _shares) 
+  constructor(address initialRoyaltiesReceiver) 
     ERC721("mTC Collection", "mTC") 
-    PaymentSplitter(_payees, _shares) payable 
   {
      _royaltiesReceiver = initialRoyaltiesReceiver;
   }
@@ -64,16 +62,12 @@ contract NFTCollection is Ownable, ERC721, ERC721Enumerable, PaymentSplitter {
       _royaltiesReceiver = newRoyaltiesReceiver;
   }
 
-
-  /// @notice Called with the sale price to determine how much royalty
-  //          is owed and to whom.
-  /// @param _salePrice - sale price of the NFT asset specified by _tokenId
-  /// @return receiver - address of who should be sent the royalty payment
-  /// @return royaltyAmount - the royalty payment amount for _value sale price
-  function royaltyInfo(uint256 _salePrice) external view returns (address receiver, uint256 royaltyAmount) {
+    function royaltyInfo(uint256 _offerId, uint256 _salePrice) external view
+    returns (address receiver, uint256 royaltyAmount) {
         uint256 _royalties = (_salePrice * royaltiesPercentage) / 100;
         return (_royaltiesReceiver, _royalties);
-  }
+    }
+
 
 
 }

@@ -16,7 +16,7 @@ contract('NFTMarketplace', (accounts) => {
     feeReceiver = accounts[0];
     nftOwner = accounts[1];
 
-    nftContract = await NFTCollection.new(nftOwner, [nftOwner, feeReceiver]);
+    nftContract = await NFTCollection.new(nftOwner);
 
     const NFTaddress = nftContract.address;
     mktContract = await NFTMarketplace.new(NFTaddress);
@@ -67,16 +67,25 @@ contract('NFTMarketplace', (accounts) => {
 
   describe('Fill Offer', () => {
     it('fills the offer and emits Event', async() => {
-      const result = await mktContract.fillOffer(1, { from: accounts[1], value: 10 });
+      const price = 10;
+      const expected_royalties = (price * nftContract.royaltiesPercentage()) // 100
+      const result = await mktContract.fillOffer(1, { from: accounts[1], value: price });
       const offer = await mktContract.offers(1);
+     
+
+
       assert.equal(offer.fulfilled, true);
       const userFunds = await mktContract.userFunds(offer.user);
       assert.equal(userFunds.toNumber(), 10);
 
       const log = result.logs[0];
+      
+      
       assert.equal(log.event, 'OfferFilled');
       const event = log.args;
+      console.log(event);
       assert.equal(event.offerId.toNumber(), 1);
+      assert.equal( event.RoyaltiesPaid.value, expected_royalties)
     });
     
     it('The offer must exist', async() => {
@@ -129,41 +138,6 @@ contract('NFTMarketplace', (accounts) => {
     });
   });
 
-  describe('Claim funds', () => {
-    it('Rejects users without funds to claim', async() => {
-      await expectRevert(mktContract.claimFunds({ from: accounts[1] }), 'This user has no funds to be claimed');
-    });
 
-    it('Pays the correct amount and emits Event', async() => {
-      const fundsBefore = await mktContract.userFunds(accounts[0]);
-      const result = await mktContract.claimFunds({ from: accounts[0] });
-      const fundsAfter = await mktContract.userFunds(accounts[0]);
-      assert.equal(fundsBefore.toNumber(), 10);
-      assert.equal(fundsAfter.toNumber(), 0);
-
-      const log = result.logs[0];
-      assert.equal(log.event, 'ClaimFunds');
-      const event = log.args;
-      assert.equal(event.user, accounts[0]);
-      assert.equal(event.amount.toNumber(), 10);
-    });
-
-    it('Pay the correct royalties amount and emits Event', async() => {
-      console.log(nftContract);
-      await nftContract.release(nftOwner);
-      const fundsBefore = await mktContract.userFunds(nftOwner);
-      const result = await mktContract.claimFunds({ from: nftOwner });
-      const fundsAfter = await mktContract.userFunds(nftOwner);
-      assert.equal(fundsBefore.toNumber(), 10);
-      assert.equal(fundsAfter.toNumber(), 0);
-
-      const log = result.logs[0];
-      assert.equal(log.event, 'ClaimRoyalties');
-      const event = log.args;
-      assert.equal(event.user, accounts[0]);
-      assert.equal(event.amount.toNumber(), 10);
-    });
-
-  });
 
 });
