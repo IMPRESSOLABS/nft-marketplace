@@ -72,7 +72,7 @@ cancel = cancelOffer
     })
 
     it('pay all ', async() => { 
-          let beforeBalance = await web3.eth.getBalance(provider)
+          let beforeBalance = await web3.eth.getBalance(nftOwner)
           
           
           const price = web3.utils.toWei('1000', 'ether');
@@ -83,19 +83,21 @@ cancel = cancelOffer
           await mktContract.claimFunds();
     
 
-          let balance = await web3.eth.getBalance(provider)
-          
-          console.log(web3.utils.fromWei(balance, 'ether') + ' ' + web3.utils.fromWei(beforeBalance, 'ether'))
-          
+    
           const charliePrice = web3.utils.toWei('2000', 'ether');
           const expected_royalties = (charliePrice * await nftContract.royaltiesPercentage()) / 100 
 
           await nftContract.approve(mktContract.address, 1, {"from": charlie} );
           await mktContract.makeOffer(1, charliePrice, {"from": charlie} );
           await mktContract.fillOffer(2, { from: bob, value: charliePrice});
-    
-   
+          await splitter.payAll({"from": nftOwner})
+          await mktContract.claimFunds({"from": charlie});
 
+   
+          let balance = await web3.eth.getBalance(nftOwner)
+          
+          console.log(web3.utils.fromWei(balance, 'ether') + ' ' + web3.utils.fromWei(beforeBalance, 'ether'))
+          
     })
 
   });
