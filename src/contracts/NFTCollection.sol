@@ -6,8 +6,9 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IERC2981.sol";
 
-contract NFTCollection is Ownable, ERC721, ERC721Enumerable {
+contract NFTCollection is Ownable, ERC721, ERC721Enumerable{
   string[] public tokenURIs;
+  uint8 public decimals = 18;
   mapping(string => bool) _tokenURIExists;
   mapping(uint => string) _tokenIdToTokenURI;
   // Address of the royalties recipient
@@ -26,7 +27,8 @@ contract NFTCollection is Ownable, ERC721, ERC721Enumerable {
   }
 
   function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721Enumerable) returns (bool) {
-    return super.supportsInterface(interfaceId);
+      return interfaceId == type(IERC2981).interfaceId ||
+      super.supportsInterface(interfaceId);
   }
 
   function tokenURI(uint256 tokenId) public override view returns (string memory) {
@@ -62,11 +64,11 @@ contract NFTCollection is Ownable, ERC721, ERC721Enumerable {
       _royaltiesReceiver = newRoyaltiesReceiver;
   }
 
-    function royaltyInfo(uint256 _offerId, uint256 _salePrice) external view
-    returns (address receiver, uint256 royaltyAmount) {
+  function royaltyInfo(uint256 _salePrice) external view returns (address receiver, uint256 royaltyAmount) {
         uint256 _royalties = (_salePrice * royaltiesPercentage) / 100;
+
         return (_royaltiesReceiver, _royalties);
-    }
+  }
 
 
 

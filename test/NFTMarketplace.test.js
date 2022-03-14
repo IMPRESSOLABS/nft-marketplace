@@ -27,12 +27,12 @@ contract('NFTMarketplace', (accounts) => {
 
   describe('Make Offer', () => {
     it('Requires the approval from the user', async () => {
-      await expectRevert(mktContract.makeOffer(1, 10), 'ERC721: transfer caller is not owner nor approved');
+      await expectRevert(mktContract.makeOffer(1, 1000), 'ERC721: transfer caller is not owner nor approved');
     });
 
     before(async() => {
       await nftContract.approve(mktContract.address, 2);
-      await mktContract.makeOffer(2, 10);      
+      await mktContract.makeOffer(2, 1000);      
     })
 
     it('Transfers the ownership to this contract', async() => {
@@ -45,7 +45,7 @@ contract('NFTMarketplace', (accounts) => {
       assert.equal(offer.offerId.toNumber(), 1);
       assert.equal(offer.id.toNumber(), 2);
       assert.equal(offer.user, accounts[0]);
-      assert.equal(offer.price.toNumber(), 10);
+      assert.equal(offer.price.toNumber(), 1000);
       assert.equal(offer.fulfilled, false);
       assert.equal(offer.cancelled, false);
     });
@@ -64,11 +64,10 @@ contract('NFTMarketplace', (accounts) => {
       assert.equal(event.cancelled, false);
     });
   });
-
   describe('Fill Offer', () => {
     it('fills the offer and emits Event', async() => {
-      const price = 10;
-      const expected_royalties = (price * nftContract.royaltiesPercentage()) // 100
+      const price = 1000;
+      const expected_royalties = (price * await nftContract.royaltiesPercentage()) / 100 
       const result = await mktContract.fillOffer(1, { from: accounts[1], value: price });
       const offer = await mktContract.offers(1);
      
@@ -76,16 +75,18 @@ contract('NFTMarketplace', (accounts) => {
 
       assert.equal(offer.fulfilled, true);
       const userFunds = await mktContract.userFunds(offer.user);
-      assert.equal(userFunds.toNumber(), 10);
+      assert.equal(userFunds.toNumber(), 1000 - expected_royalties);
 
       const log = result.logs[0];
-      
+
+      // assert.equal(log.event, 'RoyaltiesPaid');
+      // const event = log.args;       
+      //assert.equal( event.amount.toNumber(), expected_royalties)
       
       assert.equal(log.event, 'OfferFilled');
       const event = log.args;
-      console.log(event);
       assert.equal(event.offerId.toNumber(), 1);
-      assert.equal( event.RoyaltiesPaid.value, expected_royalties)
+
     });
     
     it('The offer must exist', async() => {

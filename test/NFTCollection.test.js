@@ -64,5 +64,24 @@ contract('NFTCollection', (accounts) => {
       // FAILURE
       await expectRevert(contract.tokenURI(2), 'ERC721Metadata: URI query for nonexistent token');
     });
+
+    
+  });
+  describe('royalties', () => {
+    it('royalties percentage', async() => {
+      const royaltiesPercentage = await contract.royaltiesPercentage()
+      assert.equal(royaltiesPercentage.toNumber(), 7)
+    });
+    
+    it('royalties is assigned', async() => {
+
+ 
+      const royaltiesPercentage = await contract.royaltiesPercentage()
+      const price = 1
+      const expectedRoyalties = (price * royaltiesPercentage.toNumber()) / 100
+      const info = await contract.royaltyInfo(price * 100)
+      assert.equal(info.royaltyAmount.toNumber() / 100, expectedRoyalties)
+
+    });
   });
 });

@@ -16,7 +16,7 @@ contract NFTMarketplace {
     uint offerId;
     uint id;
     address user;
-    uint price;
+    uint256 price;
     bool fulfilled;
     bool cancelled;
   }
@@ -25,7 +25,7 @@ contract NFTMarketplace {
     uint offerId,
     uint id,
     address user,
-    uint price,
+    uint256 price,
     bool fulfilled,
     bool cancelled
   );
@@ -34,15 +34,15 @@ contract NFTMarketplace {
 
   event OfferFilled(uint offerId, uint id, address newOwner);
   event OfferCancelled(uint offerId, uint id, address owner);
-  event ClaimFunds(address user, uint amount);
-  event RoyaltiesPaid(uint256 offerId, uint amount);
+  event ClaimFunds(address user, uint256 amount);
+  event RoyaltiesPaid(uint offerId, uint256 amount);
 
   constructor(address payable  _nftCollection) {
         _tokenContractAddress = _nftCollection;
         nftCollection = NFTCollection(_nftCollection);
   }
   
-  function makeOffer(uint _id, uint _price) public {
+  function makeOffer(uint _id, uint256 _price) public {
     nftCollection.transferFrom(msg.sender, address(this), _id);
     offerCount ++;
     offers[offerCount] = _Offer(offerCount, _id, msg.sender, _price, false, false);
@@ -59,12 +59,13 @@ contract NFTMarketplace {
     nftCollection.transferFrom(address(this), msg.sender, _offer.id);
     _offer.fulfilled = true;
 
-       uint256 saleValue = msg.value;
-       uint256 netSaleValue = saleValue;
-      // Pay royalties if applicable
-        if (_checkRoyalties(_tokenContractAddress)) {
-            netSaleValue = _deduceRoyalties(_offerId, msg.value);
-        }
+    uint256 saleValue = msg.value;
+    uint256 netSaleValue = saleValue;
+           
+    // Pay royalties if applicable
+    if (_checkRoyalties(_tokenContractAddress)) {
+        netSaleValue = _deduceRoyalties(_offerId, msg.value);
+    }
 
     userFunds[_offer.user] += netSaleValue;
     emit OfferFilled(_offerId, _offer.id, msg.sender);
@@ -105,7 +106,7 @@ contract NFTMarketplace {
     function _deduceRoyalties(uint256 offerId, uint256 grossSaleValue)
     internal returns (uint256 netSaleAmount) {
         // Get amount of royalties to pays and recipient
-        (address royaltiesReceiver, uint256 royaltiesAmount) = nftCollection.royaltyInfo(offerId, grossSaleValue);
+        (address royaltiesReceiver, uint256 royaltiesAmount) = nftCollection.royaltyInfo(grossSaleValue);
         // Deduce royalties from sale value
         uint256 netSaleValue = grossSaleValue - royaltiesAmount;
         // Transfer royalties to rightholder if not zero
@@ -113,7 +114,7 @@ contract NFTMarketplace {
             royaltiesReceiver.call{value: royaltiesAmount}('');
         }
         // Broadcast royalties payment
-        emit RoyaltiesPaid(offerId, royaltiesAmount);
+        // emit RoyaltiesPaid(offerId, royaltiesAmount);
         return netSaleValue;
     } 
 }

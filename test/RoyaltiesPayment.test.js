@@ -55,9 +55,10 @@ contract('RoyaltiesPayment', (accounts) => {
   describe('Royalties Payout', () => {
     it('pay all ', async() => { 
   
-        await nftContract.transferFrom(splitter, 1, {"from": nftOwner})
-        await splitter.payAll({"from": owner})
-        console.log(await alice.balance())
+        // await mktContract.transfer(splitter, 1, {"from": nftOwner})
+        await splitter.payAll({"from": nftOwner})
+        let balance = await web3.eth.getBalance(charlie)
+        console.log(balance)
     });
 
   });
