@@ -29,11 +29,15 @@ contract('RoyaltiesPayment', (accounts) => {
       const NFTaddress = nftContract.address;
       mktContract = await NFTMarketplace.new(NFTaddress);
   
-      await nftContract.safeMint('testURI');
+      await nftContract.safeMint('testURI1');
+
+
+
       // await mktContract.fillOffer(1, { from: alice, value: 10 });
       // await mktContract.offers(1);
-      splitter = await RoyaltiesPayment.new([provider, alice], {"from": nftOwner});
- 
+      splitter = await RoyaltiesPayment.new([provider], {"from": nftOwner});
+
+
 
     });
   
@@ -41,7 +45,7 @@ contract('RoyaltiesPayment', (accounts) => {
     it('add payees ', async() => { 
   
         await splitter.addPayee(bob, {"from": nftOwner})
-        const payee = await splitter.payees(2);
+        const payee = await splitter.payees(1);
         assert.equal(bob, payee, 'to is correct')
     });
     it('add payees by non-owner', async() => { 
@@ -53,13 +57,46 @@ contract('RoyaltiesPayment', (accounts) => {
   });
 
   describe('Royalties Payout', () => {
+
+/*
+offer = makeOffer
+buy = fillOffer
+cancel = cancelOffer
+*/
+
+    before(async() => {
+
+   
+
+
+    })
+
     it('pay all ', async() => { 
-  
-        // await mktContract.transfer(splitter, 1, {"from": nftOwner})
-        await splitter.payAll({"from": nftOwner})
-        let balance = await web3.eth.getBalance(charlie)
-        console.log(balance)
-    });
+          let beforeBalance = await web3.eth.getBalance(provider)
+          
+          
+          const price = web3.utils.toWei('1000', 'ether');
+          await nftContract.approve(mktContract.address, 1);
+          await mktContract.makeOffer(1, price);      
+          await mktContract.fillOffer(1, { from: charlie, value: price});
+          await splitter.payAll({"from": nftOwner})
+          await mktContract.claimFunds();
+    
+
+          let balance = await web3.eth.getBalance(provider)
+          
+          console.log(web3.utils.fromWei(balance, 'ether') + ' ' + web3.utils.fromWei(beforeBalance, 'ether'))
+          
+          const charliePrice = web3.utils.toWei('2000', 'ether');
+          const expected_royalties = (charliePrice * await nftContract.royaltiesPercentage()) / 100 
+
+          await nftContract.approve(mktContract.address, 1, {"from": charlie} );
+          await mktContract.makeOffer(1, charliePrice, {"from": charlie} );
+          await mktContract.fillOffer(2, { from: bob, value: charliePrice});
+    
+   
+
+    })
 
   });
 
