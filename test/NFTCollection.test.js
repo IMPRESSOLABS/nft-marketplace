@@ -11,13 +11,7 @@ contract('NFTCollection', (accounts) => {
   before(async () => {
       feeReceiver = accounts[0];
       nftOwner = accounts[1];
-      // royalties 5% to Owner and 2% to platform provider
-      const ownerShare = 5;
-      const platformShare = 2;
-      const ownerShareSplit = (ownerShare / (ownerShare + platformShare) * 100);
-      const platformShareSplit = (ownerShare / (ownerShare + platformShare) * 100);
-
-      contract = await NFTCollection.new(nftOwner);
+      contract = await NFTCollection.new();
   });
 
   describe('deployment', () => {
@@ -67,21 +61,5 @@ contract('NFTCollection', (accounts) => {
 
     
   });
-  describe('royalties', () => {
-    it('royalties percentage', async() => {
-      const royaltiesPercentage = await contract.royaltiesPercentage()
-      assert.equal(royaltiesPercentage.toNumber(), 7)
-    });
-    
-    it('royalties is assigned', async() => {
 
- 
-      const royaltiesPercentage = await contract.royaltiesPercentage()
-      const price = 1
-      const expectedRoyalties = (price * royaltiesPercentage.toNumber()) / 100
-      const info = await contract.royaltyInfo(price * 100)
-      assert.equal(info.royaltyAmount.toNumber() / 100, expectedRoyalties)
-
-    });
-  });
 });

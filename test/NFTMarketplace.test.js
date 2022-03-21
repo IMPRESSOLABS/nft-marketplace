@@ -1,31 +1,40 @@
 const { expectRevert } = require('@openzeppelin/test-helpers');
 const { assertion } = require('@openzeppelin/test-helpers/src/expectRevert');
 
-
 const NFTCollection = artifacts.require('./NFTCollection.sol');
 const NFTMarketplace = artifacts.require('./NFTMarketplace.sol');
-
+const NFTPayment = artifacts.require('./NFTPayment.sol');
 
 contract('NFTMarketplace', (accounts) => {
+
   let nftContract;
   let mktContract;
+  let paymentContract;
   let nftOwner; // The original owner of the asset e.g. the Artist
   let feeReceiver; // The marketplace provider
 
   before(async () => {
     feeReceiver = accounts[0];
     nftOwner = accounts[1];
+    nftSeller = accounts[2];
+    nftBuyer = accounts[3];
 
-    nftContract = await NFTCollection.new(nftOwner);
+    nftContract = await NFTCollection.new();
 
     const NFTaddress = nftContract.address;
-    mktContract = await NFTMarketplace.new(NFTaddress);
 
-    await nftContract.safeMint('testURI');
+    
+    paymentContract = await NFTPayment.new([feeReceiver, nftOwner],[2, 98]);
+    mktContract = await NFTMarketplace.new(NFTaddress, paymentContract.address, {from: nftOwner});
+
+    await nftContract.safeMint('testURI')
     await nftContract.safeMint('testURI2');
+    await nftContract.safeMint('testURI3');
+
   });
 
   describe('Make Offer', () => {
+
     it('Requires the approval from the user', async () => {
       await expectRevert(mktContract.makeOffer(1, 1000), 'ERC721: transfer caller is not owner nor approved');
     });
@@ -64,25 +73,21 @@ contract('NFTMarketplace', (accounts) => {
       assert.equal(event.cancelled, false);
     });
   });
+
   describe('Fill Offer', () => {
+
     it('fills the offer and emits Event', async() => {
       const price = 1000;
-      const expected_royalties = (price * await nftContract.royaltiesPercentage()) / 100 
-      const result = await mktContract.fillOffer(1, { from: accounts[1], value: price });
+      const result = await mktContract.fillOffer(1, { from: nftBuyer, value: price });
       const offer = await mktContract.offers(1);
-     
-
 
       assert.equal(offer.fulfilled, true);
       const userFunds = await mktContract.userFunds(offer.user);
-      assert.equal(userFunds.toNumber(), 1000 - expected_royalties);
+  
+
+      assert.equal(userFunds.toNumber(), 1000);
 
       const log = result.logs[0];
-
-      // assert.equal(log.event, 'RoyaltiesPaid');
-      // const event = log.args;       
-      //assert.equal( event.amount.toNumber(), expected_royalties)
-      
       assert.equal(log.event, 'OfferFilled');
       const event = log.args;
       assert.equal(event.offerId.toNumber(), 1);
@@ -90,11 +95,11 @@ contract('NFTMarketplace', (accounts) => {
     });
     
     it('The offer must exist', async() => {
-      await expectRevert(mktContract.fillOffer(3, { from: accounts[1] }), 'The offer must exist');
+      await expectRevert(mktContract.fillOffer(3, { from: nftOwner}), 'The offer must exist');
     });
 
     it('The owner cannot fill it', async() => {
-      await expectRevert(mktContract.fillOffer(2, { from: accounts[0] }), 'The owner of the offer cannot fill it');
+      await expectRevert(mktContract.fillOffer(2, { from: nftSeller }), 'The owner of the offer cannot fill it');
     });
 
     it('Cannot be fulfilled twice', async() => {
@@ -111,6 +116,7 @@ contract('NFTMarketplace', (accounts) => {
   });
 
   describe('Cancel Offer', () => {
+
     it('Only the owner can cancel', async() => {
       await expectRevert(mktContract.cancelOffer(2, { from: accounts[1] }), 'The offer can only be canceled by the owner');
     });
@@ -138,7 +144,36 @@ contract('NFTMarketplace', (accounts) => {
       await expectRevert(mktContract.fillOffer(2, { from: accounts[1] }), 'A cancelled offer cannot be fulfilled');
     });
   });
+  describe('Split payment fee', () => { 
 
+       before(async() => {
+            await mktContract.claimFunds();
+       }); 
 
+       it('Release to the Fee Receiver', async() => {
+     
+             
+             const result = await paymentContract.release(feeReceiver);
+             const log = result.logs[0];
+             assert.equal(log.event, 'PaymentReleased');
+             const event = log.args;
+             assert.equal(event.amount.toNumber(), 20);
+       });
+
+       it('Release to the Owner', async() => {
+         
+              const result = await paymentContract.release(nftOwner);
+              const log = result.logs[0];
+              assert.equal(log.event, 'PaymentReleased');
+              const event = log.args;
+              assert.equal(event.amount.toNumber(), 980);
+       });
+
+       it('Release to the Seller', async() => {
+              await expectRevert(paymentContract.release(nftSeller), 'PaymentSplitter: account has no shares');
+       });
+
+   });
+   
 
 });

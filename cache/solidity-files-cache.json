@@ -37,8 +37,8 @@
       ]
     },
     "C:\\dev\\nft-marketplace\\src\\contracts\\NFTCollection.sol": {
-      "lastModificationDate": 1647054432155,
-      "contentHash": "1318553adba6938bdc37669e720c66aa",
+      "lastModificationDate": 1647836790189,
+      "contentHash": "ad1adce56a75a7c0a824525d5c19d9a4",
       "sourceName": "src/contracts/NFTCollection.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -66,8 +66,7 @@
       "imports": [
         "@openzeppelin/contracts/token/ERC721/ERC721.sol",
         "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol",
-        "@openzeppelin/contracts/access/Ownable.sol",
-        "./interfaces/IERC2981.sol"
+        "@openzeppelin/contracts/access/Ownable.sol"
       ],
       "versionPragmas": [
         "^0.8.0"
@@ -481,8 +480,8 @@
       ]
     },
     "C:\\dev\\nft-marketplace\\src\\contracts\\NFTMarketplace.sol": {
-      "lastModificationDate": 1647055448649,
-      "contentHash": "ae694063e0cee1f2a75f35d916d9a631",
+      "lastModificationDate": 1647839498289,
+      "contentHash": "657280a9503891d4a57ef47fbab30869",
       "sourceName": "src/contracts/NFTMarketplace.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -515,43 +514,6 @@
       ],
       "artifacts": [
         "NFTMarketplace"
-      ]
-    },
-    "C:\\dev\\nft-marketplace\\src\\contracts\\interfaces\\IERC2981.sol": {
-      "lastModificationDate": 1646895354599,
-      "contentHash": "56714f79f2529eabaecb9216eeaf4e73",
-      "sourceName": "src/contracts/interfaces/IERC2981.sol",
-      "solcConfig": {
-        "version": "0.8.0",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/utils/introspection/ERC165.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "IERC2981"
       ]
     },
     "C:\\dev\\nft-marketplace\\node_modules\\@openzeppelin\\contracts\\access\\Ownable.sol": {
@@ -665,44 +627,6 @@
         "SafeMath"
       ]
     },
-    "C:\\dev\\nft-marketplace\\src\\contracts\\RoyaltiesPayment.sol": {
-      "lastModificationDate": 1646980743954,
-      "contentHash": "be1d3b64465ba84ef52585d3ae3d856d",
-      "sourceName": "src/contracts/RoyaltiesPayment.sol",
-      "solcConfig": {
-        "version": "0.8.0",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/token/ERC20/IERC20.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "RoyaltiesPayment"
-      ]
-    },
     "C:\\dev\\nft-marketplace\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\IERC20.sol": {
       "lastModificationDate": 1646879217754,
       "contentHash": "0eac3e1a83ee62326ca007811285b274",
@@ -736,6 +660,43 @@
       ],
       "artifacts": [
         "IERC20"
+      ]
+    },
+    "C:\\dev\\nft-marketplace\\src\\contracts\\NFTPayment.sol": {
+      "lastModificationDate": 1647836852163,
+      "contentHash": "b5c413fd828c0c3c8c470279a56e184e",
+      "sourceName": "src/contracts/NFTPayment.sol",
+      "solcConfig": {
+        "version": "0.8.0",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/finance/PaymentSplitter.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "NFTPayment"
       ]
     }
   }
