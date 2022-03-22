@@ -28,9 +28,9 @@ contract('NFTMarketplace', (accounts) => {
     paymentContract = await NFTPayment.new([feeReceiver, nftOwner],[2, 98]);
     mktContract = await NFTMarketplace.new(NFTaddress, paymentContract.address);
 
-    await nftContract.safeMint('testURI');
-    await nftContract.safeMint('testURI2');
-    await nftContract.safeMint('testURI3');
+    await nftContract.safeMint('testURI', 5);
+    await nftContract.safeMint('testURI2', 5);
+    await nftContract.safeMint('testURI3', 5);
 
   });
 
@@ -178,9 +178,13 @@ contract('NFTMarketplace', (accounts) => {
    describe('NFT Buyer 1 sell to Buyer 2', () => {  
 
        before( async() => {
-            paymentContract = await NFTPayment.new([feeReceiver, nftOwner, nftBuyer1],[2, 5, 93]);
-            mktContract = await NFTMarketplace.new(NFTaddress, paymentContract.address);
 
+            const copyrightOwner = await nftContract.copyrightOwnership(1);
+            const copyrightFee = await nftContract.copyrightFee(1);
+            const serviceFee = await nftContract.serviceFee();
+            const receiveAble= 100 - (serviceFee.toNumber() + copyrightFee.toNumber());
+            paymentContract = await NFTPayment.new([feeReceiver, copyrightOwner, nftBuyer1],[serviceFee, copyrightFee, receiveAble]);
+            mktContract = await NFTMarketplace.new(NFTaddress, paymentContract.address);
             await nftContract.approve(mktContract.address, 1);
             const result = await mktContract.makeOffer(1, 10000);
 
@@ -197,8 +201,9 @@ contract('NFTMarketplace', (accounts) => {
             assert.equal(event.amount.toNumber(), 200);
        });
        
-       it('Release to the Copyright Owner', async() => {
-              const result = await paymentContract.release(nftOwner);
+       it('Release royalty to the Copyright Owner', async() => {
+              const copyrightOwner = await nftContract.copyrightOwnership(1);
+              const result = await paymentContract.release(copyrightOwner);
               const log = result.logs[0];
               assert.equal(log.event, 'PaymentReleased');
               const event = log.args;

@@ -10,13 +10,13 @@ contract NFTCollection is Ownable, ERC721, ERC721Enumerable {
 
   string[] public tokenURIs;
   uint8 public decimals = 18;
+  address _providerAddress;
+  uint _serviceFee = 2;
   mapping(string => bool) _tokenURIExists;
   mapping(uint => string) _tokenIdToTokenURI;
-  // Address of the royalties recipient
-  address private _copyrightOwner;
-  uint256 public constant ownerPercentage = 5; 
-  uint256 public constant copyrightOwnerPercentage = 5; 
-  uint256 public constant serviceChargePercentage = 2; 
+  mapping(uint => address) _copyrightOwnership;
+  mapping(uint => uint) _copyrightFee;
+
 
   constructor() 
     ERC721("mTC Collection", "mTC")
@@ -38,24 +38,33 @@ contract NFTCollection is Ownable, ERC721, ERC721Enumerable {
       return _tokenIdToTokenURI[tokenId];
   }
 
-  function safeMint(string memory _tokenURI) public {
+  function safeMint(string memory _tokenURI, uint _fee) public {
       require(!_tokenURIExists[_tokenURI], 'The token URI should be unique');
       tokenURIs.push(_tokenURI);    
-      _copyrightOwner = msg.sender;
       uint _id = tokenURIs.length;
+      _copyrightOwnership[_id] = msg.sender;
+      _copyrightFee[_id] = _fee;
       _tokenIdToTokenURI[_id] = _tokenURI;
       _safeMint(msg.sender, _id);
       _tokenURIExists[_tokenURI] = true;
   }
 
-  function _burn(uint256 tokenId) internal override(ERC721) {
+  function _burn(uint tokenId) internal override(ERC721) {
       super._burn(tokenId);
   }
 
-  function copyrightOwner() view external returns(address) {
-      return _copyrightOwner;
+  function copyrightOwnership(uint tokenId) view external returns(address) {
+      return _copyrightOwnership[tokenId];
   }
 
+  function copyrightFee(uint tokenId) view external returns(uint) {
+      return _copyrightFee[tokenId];
+  }
+
+
+  function serviceFee() view external returns(uint) {
+      return _serviceFee;
+  }
 
 
 

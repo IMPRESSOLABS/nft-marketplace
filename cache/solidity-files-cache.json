@@ -37,8 +37,8 @@
       ]
     },
     "C:\\dev\\nft-marketplace\\src\\contracts\\NFTCollection.sol": {
-      "lastModificationDate": 1647836790189,
-      "contentHash": "ad1adce56a75a7c0a824525d5c19d9a4",
+      "lastModificationDate": 1647939069350,
+      "contentHash": "20ceaa70340f32f350ed50893f63e5d7",
       "sourceName": "src/contracts/NFTCollection.sol",
       "solcConfig": {
         "version": "0.8.0",
