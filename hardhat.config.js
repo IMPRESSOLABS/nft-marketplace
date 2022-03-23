@@ -1,4 +1,5 @@
 require("@nomiclabs/hardhat-truffle5");
+require("@nomiclabs/hardhat-waffle");
 
 module.exports = {
   defaultNetwork: "hardhat",

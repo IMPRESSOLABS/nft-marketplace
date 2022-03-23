@@ -57,6 +57,7 @@ command:
 
 ```
 $ truffle test
+$ npx hardhat test
 ```
 
 ### Deployment on Local Blockchain
@@ -65,6 +66,9 @@ Deploy the contracts on your Ganache local blockchain by running the following c
 
 ```
 $ truffle migrate
+
+$ npx hardhat node
+$ npx hardhat run scripts/deploy.js --network local
 ```
 
 ### Opening the User Interface

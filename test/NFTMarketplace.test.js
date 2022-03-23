@@ -210,7 +210,7 @@ contract('NFTMarketplace', (accounts) => {
               assert.equal(event.amount.toNumber(), 500);
        });
                
-       it('Release to the Copyright Seller', async() => {
+       it('Release balance to the Seller', async() => {
               const result = await paymentContract.release(nftBuyer1);
               const log = result.logs[0];
               assert.equal(log.event, 'PaymentReleased');

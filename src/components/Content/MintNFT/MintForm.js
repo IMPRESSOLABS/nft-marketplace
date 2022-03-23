@@ -9,8 +9,10 @@ const ipfs = ipfsClient.create({ host: 'ipfs.infura.io', port: 5001, protocol: '
 const MintForm = () => {  
   const [enteredName, setEnteredName] = useState('');
   const [descriptionIsValid, setDescriptionIsValid] = useState(true);
+  const [feeIsValid, setFeeIsValid] = useState(true);
 
   const [enteredDescription, setEnteredDescription] = useState('');
+  const [enteredFee, setEnteredFee] = useState('');
   const [nameIsValid, setNameIsValid] = useState(true);
 
   const [capturedFileBuffer, setCapturedFileBuffer] = useState(null);
@@ -25,6 +27,10 @@ const MintForm = () => {
 
   const enteredDescriptionHandler = (event) => {
     setEnteredDescription(event.target.value);
+  };
+
+  const enteredFeeHandler = (event) => {
+    setEnteredFee(event.target.value);
   };
   
   const captureFile = (event) => {
@@ -44,6 +50,7 @@ const MintForm = () => {
 
     enteredName ? setNameIsValid(true) : setNameIsValid(false);
     enteredDescription ? setDescriptionIsValid(true) : setDescriptionIsValid(false);
+    enteredFee ? setFeeIsValid(true) : setFeeIsValid(false);
     capturedFileBuffer ? setFileIsValid(true) : setFileIsValid(false);
 
     const formIsValid = enteredName && enteredDescription && capturedFileBuffer;
@@ -97,6 +104,7 @@ const MintForm = () => {
 
   const nameClass = nameIsValid? "form-control" : "form-control is-invalid";
   const descriptionClass = descriptionIsValid? "form-control" : "form-control is-invalid";
+  const feeClass = feeIsValid? "form-control" : "form-control is-invalid";
   const fileClass = fileIsValid? "form-control" : "form-control is-invalid";
   
   return(
@@ -120,6 +128,15 @@ const MintForm = () => {
             onChange={enteredDescriptionHandler}
           />
         </div>
+        <div className="col-md-6">
+          <input
+            type='number'
+            className={`${feeClass} mb-1`}
+            placeholder='Royalty fee...'
+            value={enteredFee}
+            onChange={enteredFeeHandler}
+          />
+        </div>
         <div className="col-md-2">
           <input
             type='file'
@@ -127,6 +144,7 @@ const MintForm = () => {
             onChange={captureFile}
           />
         </div>
+        
       </div>
       <button type='submit' className='btn btn-lg btn-info text-white btn-block'>MINT</button>
     </form>
