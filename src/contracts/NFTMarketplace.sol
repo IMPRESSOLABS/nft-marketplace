@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./NFTCollection.sol";
+import "./NFTPayment.sol";
 
 
 contract NFTMarketplace {
@@ -12,9 +13,10 @@ contract NFTMarketplace {
   uint public offerCount;
   mapping (uint => _Offer) public offers;
   mapping (address => uint) public userFunds;
-  mapping (address => uint) public royaltiesFunds;
+  mapping (address => uint) public userNetFunds;
   
   NFTCollection nftCollection;
+  NFTPayment nftPayment;
   
   struct _Offer {
     uint offerId;
@@ -39,7 +41,8 @@ contract NFTMarketplace {
   event ClaimFunds(address user, uint256 amount);
 
   constructor(address _nftCollection, address _payments) {
-         payments = payable(_payments);
+        nftPayment = NFTPayment(payable(_payments));
+        payments = payable(_payments);
         _tokenContractAddress = _nftCollection;
         nftCollection = NFTCollection(_nftCollection);
   }
@@ -61,10 +64,17 @@ contract NFTMarketplace {
     nftCollection.transferFrom(address(this), msg.sender, _offer.id);
     _offer.fulfilled = true;
 
+    uint tokenId =_offer.id;
+    uint256 coFee = nftCollection.getCopyrightOwnerFee(tokenId);
+    uint256 mpFee = nftCollection.getMarketplaceFee(tokenId);  
+    
     uint256 saleValue = msg.value;
-    uint256 netSaleValue = saleValue;
+    uint256 feeAmount = (saleValue * (coFee + mpFee)) / (100 * 10**18);
+    uint256 netSaleValue = saleValue - feeAmount;
   
     userFunds[_offer.user] += netSaleValue;
+    payable(payments).transfer(feeAmount);
+
     emit OfferFilled(_offerId, _offer.id, msg.sender);
   }
 
@@ -82,15 +92,9 @@ contract NFTMarketplace {
 
   function claimFunds() public {
     require(userFunds[msg.sender] > 0, 'This user has no funds to be claimed');
- 
-    payable(payments).transfer(userFunds[msg.sender]);
-  
-  
-    emit ClaimFunds(payments, userFunds[msg.sender]);
-
-    // payable(msg.sender).transfer(userFunds[msg.sender]);
-    // emit ClaimFunds(msg.sender, userFunds[msg.sender]);
-    // userFunds[msg.sender] = 0;    
+    payable(msg.sender).transfer(userFunds[msg.sender]);
+    emit ClaimFunds(msg.sender, userFunds[msg.sender]);
+    userFunds[msg.sender] = 0;    
   } 
 
   // Fallback: reverts if Ether is sent to this smart-contract by mistake

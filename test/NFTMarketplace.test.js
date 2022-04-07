@@ -4,6 +4,10 @@ const { assertion } = require('@openzeppelin/test-helpers/src/expectRevert');
 const NFTCollection = artifacts.require('./NFTCollection.sol');
 const NFTMarketplace = artifacts.require('./NFTMarketplace.sol');
 const NFTPayment = artifacts.require('./NFTPayment.sol');
+const marketplaceFee = 2;
+const copyrightFee = 5;
+const offerPrice = 1000;
+const offerPriceWei = web3.utils.toWei(offerPrice.toString(), 'ether');
 
 contract('NFTMarketplace', (accounts) => {
 
@@ -24,25 +28,28 @@ contract('NFTMarketplace', (accounts) => {
 
     NFTaddress = nftContract.address;
 
-    
-    paymentContract = await NFTPayment.new([feeReceiver, nftOwner],[2, 98]);
+
+    marketplaceShare =  web3.utils.toWei(((marketplaceFee / (marketplaceFee + copyrightFee)) * 100).toFixed(18).toString(), 'ether');
+    copyrightShare =  web3.utils.toWei(((copyrightFee / (marketplaceFee + copyrightFee)) * 100).toFixed(18).toString(), 'ether');
+  
+    paymentContract = await NFTPayment.new([feeReceiver, nftOwner],[marketplaceShare, copyrightShare]);
     mktContract = await NFTMarketplace.new(NFTaddress, paymentContract.address);
 
-    await nftContract.safeMint('testURI', 5);
-    await nftContract.safeMint('testURI2', 5);
-    await nftContract.safeMint('testURI3', 5);
+    await nftContract.safeMint('testURI', web3.utils.toWei(copyrightFee.toString()), feeReceiver, web3.utils.toWei(marketplaceFee.toString()));
+    await nftContract.safeMint('testURI2', web3.utils.toWei(copyrightFee.toString()), feeReceiver, web3.utils.toWei(marketplaceFee.toString()));
+    await nftContract.safeMint('testURI3', web3.utils.toWei(copyrightFee.toString()), feeReceiver, web3.utils.toWei(marketplaceFee.toString()));
 
   });
 
   describe('Make Offer', () => {
 
     it('Requires the approval from the user', async () => {
-      await expectRevert(mktContract.makeOffer(1, 1000), 'ERC721: transfer caller is not owner nor approved');
+      await expectRevert(mktContract.makeOffer(1, offerPriceWei), 'ERC721: transfer caller is not owner nor approved');
     });
 
     before(async() => {
       await nftContract.approve(mktContract.address, 2);
-      await mktContract.makeOffer(2, 1000);      
+      await mktContract.makeOffer(2, offerPriceWei);      
     })
 
     it('Transfers the ownership to this contract', async() => {
@@ -55,21 +62,21 @@ contract('NFTMarketplace', (accounts) => {
       assert.equal(offer.offerId.toNumber(), 1);
       assert.equal(offer.id.toNumber(), 2);
       assert.equal(offer.user, nftOwner);
-      assert.equal(offer.price.toNumber(), 1000);
+      assert.equal(web3.utils.fromWei(offer.price), offerPrice);
       assert.equal(offer.fulfilled, false);
       assert.equal(offer.cancelled, false);
     });
 
     it('Emits an Event Offer', async() => {
       await nftContract.approve(mktContract.address, 1);
-      const result = await mktContract.makeOffer(1, 1000);
+      const result = await mktContract.makeOffer(1, offerPriceWei);
       const log = result.logs[0];
       assert.equal(log.event, 'Offer');
       const event = log.args;
       assert.equal(event.offerId.toNumber(), 2);
       assert.equal(event.id.toNumber(), 1);
       assert.equal(event.user, nftOwner);
-      assert.equal(event.price.toNumber(), 1000);
+      assert.equal(web3.utils.fromWei(event.price), web3.utils.fromWei(offerPriceWei));
       assert.equal(event.fulfilled, false);
       assert.equal(event.cancelled, false);
     });
@@ -78,7 +85,7 @@ contract('NFTMarketplace', (accounts) => {
   describe('Fill Offer', () => {
 
     it('fills the offer and emits Event', async() => {
-      const price = 1000;
+      const price = offerPriceWei;
       const result = await mktContract.fillOffer(1, { from: nftBuyer1, value: price });
       const offer = await mktContract.offers(1);
 
@@ -86,7 +93,7 @@ contract('NFTMarketplace', (accounts) => {
       const userFunds = await mktContract.userFunds(offer.user);
   
 
-      assert.equal(userFunds.toNumber(), 1000);
+      assert.equal(web3.utils.fromWei(userFunds), web3.utils.fromWei(offerPriceWei) - 70);
 
       const log = result.logs[0];
       assert.equal(log.event, 'OfferFilled');
@@ -152,13 +159,11 @@ contract('NFTMarketplace', (accounts) => {
        }); 
 
        it('Release to the Fee Receiver', async() => {
-     
-             
              const result = await paymentContract.release(feeReceiver);
              const log = result.logs[0];
              assert.equal(log.event, 'PaymentReleased');
              const event = log.args;
-             assert.equal(event.amount.toNumber(), 20);
+             assert.equal(web3.utils.fromWei(event.amount), 20);
        });
 
        it('Release to the Owner', async() => {
@@ -167,7 +172,7 @@ contract('NFTMarketplace', (accounts) => {
               const log = result.logs[0];
               assert.equal(log.event, 'PaymentReleased');
               const event = log.args;
-              assert.equal(event.amount.toNumber(), 980);
+              assert.equal(web3.utils.fromWei(event.amount), 50);
        });
 
        it('Release to the Seller', async() => {
@@ -179,18 +184,18 @@ contract('NFTMarketplace', (accounts) => {
 
        before( async() => {
 
-            const copyrightOwner = await nftContract.copyrightOwnership(1);
-            const copyrightFee = await nftContract.copyrightFee(1);
-            const serviceFee = await nftContract.serviceFee();
-            const receiveAble= 100 - (serviceFee.toNumber() + copyrightFee.toNumber());
+            const copyrightOwner = await nftContract.getCopyrightOwner(1);
+            const copyrightFee = await nftContract.getCopyrightOwnerFee(1);
+            const serviceFee = await nftContract.getMarketplaceFee(1);
+            const receiveAble= 100 - (web3.utils.fromWei(serviceFee) + web3.utils.fromWei(copyrightFee));
             paymentContract = await NFTPayment.new([feeReceiver, copyrightOwner, nftBuyer1],[serviceFee, copyrightFee, receiveAble]);
             mktContract = await NFTMarketplace.new(NFTaddress, paymentContract.address);
             await nftContract.approve(mktContract.address, 1);
-            const result = await mktContract.makeOffer(1, 10000);
+            const result = await mktContract.makeOffer(1, offerPriceWei);
 
-            await mktContract.fillOffer(1, { from: nftBuyer2, value: 10000 });
+            await mktContract.fillOffer(1, { from: nftBuyer2, value: offerPriceWei });
             await mktContract.offers(1);
-            await mktContract.claimFunds();
+         
        });
 
        it('Release to the Fee Receiver', async() => {
@@ -198,24 +203,24 @@ contract('NFTMarketplace', (accounts) => {
             const log = result.logs[0];
             assert.equal(log.event, 'PaymentReleased');
             const event = log.args;
-            assert.equal(event.amount.toNumber(), 200);
+            assert.equal(web3.utils.fromWei(event.amount), 20);
        });
        
        it('Release royalty to the Copyright Owner', async() => {
-              const copyrightOwner = await nftContract.copyrightOwnership(1);
+              const copyrightOwner = await nftContract.getCopyrightOwner(1);
               const result = await paymentContract.release(copyrightOwner);
               const log = result.logs[0];
               assert.equal(log.event, 'PaymentReleased');
               const event = log.args;
-              assert.equal(event.amount.toNumber(), 500);
+              assert.equal(web3.utils.fromWei(event.amount), 50);
        });
                
        it('Release balance to the Seller', async() => {
-              const result = await paymentContract.release(nftBuyer1);
+              const result = await mktContract.claimFunds();
               const log = result.logs[0];
-              assert.equal(log.event, 'PaymentReleased');
+              assert.equal(log.event, 'ClaimFunds');
               const event = log.args;
-              assert.equal(event.amount.toNumber(), 9300);
+              assert.equal(web3.utils.fromWei(event.amount), 930);
        });
 
 

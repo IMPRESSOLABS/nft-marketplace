@@ -5,6 +5,7 @@ const NFTCollection = artifacts.require('./NFTCollection.sol');
 
 contract('NFTCollection', (accounts) => {
   let contract;
+  const marketplace = accounts[1]
 
   before(async () => {
       contract = await NFTCollection.new();
@@ -32,7 +33,8 @@ contract('NFTCollection', (accounts) => {
 
   describe('minting', () => {
     it('creates a new token', async () => {
-      const result = await contract.safeMint('testURI', 5);
+
+      const result = await contract.safeMint('testURI', 5, marketplace, 2);
       const totalSupply = await contract.totalSupply();
 
       // SUCCESS
@@ -43,7 +45,7 @@ contract('NFTCollection', (accounts) => {
       assert.equal(event.to, accounts[0], 'to is correct')
 
       // FAILURE: cannot mint same color twice
-      await expectRevert(contract.safeMint('testURI', 5), 'The token URI should be unique');
+      await expectRevert(contract.safeMint('testURI', 5, marketplace, 2), 'The token URI should be unique');
     });
 
     it('token URI is correctly assigned', async() => {
@@ -55,23 +57,30 @@ contract('NFTCollection', (accounts) => {
       await expectRevert(contract.tokenURI(2), 'ERC721Metadata: URI query for nonexistent token');
     });
 
-    it('token assign to correct copyright ownership', async() => { 
+    it('token assign to correct copyright owner', async() => { 
       // SUCCESS
-      const owner = await contract.copyrightOwnership(1);
-      assert.equal(owner, accounts[0]);
+      const address = await contract.getCopyrightOwner(1);
+      assert.equal(address, accounts[0]);
 
     });
 
-    it('token assign to correct copyright ownership fee charge', async() => { 
+    it('token assign to correct copyright owner fee', async() => { 
       // SUCCESS
-      const fee = await contract.copyrightFee(1);
+      const fee = await contract.getCopyrightOwnerFee(1);
       assert.equal(5, fee.toNumber());
 
     });
 
-    it('token assign to correct provider service charge', async() => { 
+    it('token assign to correct marketplace', async() => { 
       // SUCCESS
-      const fee = await contract.serviceFee();
+      const address = await contract.getMarketplace(1);
+      assert.equal(address, marketplace);
+
+    });
+
+    it('token assign to correct marketplace service fee', async() => { 
+      // SUCCESS
+      const fee = await contract.getMarketplaceFee(1);
       assert.equal(2, fee.toNumber());
 
     });

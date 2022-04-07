@@ -37,8 +37,8 @@
       ]
     },
     "C:\\dev\\nft-marketplace\\src\\contracts\\NFTCollection.sol": {
-      "lastModificationDate": 1648015485732,
-      "contentHash": "20ceaa70340f32f350ed50893f63e5d7",
+      "lastModificationDate": 1649312178567,
+      "contentHash": "873df14be6ccdf0a25e8464fca0118cf",
       "sourceName": "src/contracts/NFTCollection.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -517,8 +517,8 @@
       ]
     },
     "C:\\dev\\nft-marketplace\\src\\contracts\\NFTMarketplace.sol": {
-      "lastModificationDate": 1647839498289,
-      "contentHash": "657280a9503891d4a57ef47fbab30869",
+      "lastModificationDate": 1649321571885,
+      "contentHash": "7a4b9bccf4a2495264cf09ac2e9334e1",
       "sourceName": "src/contracts/NFTMarketplace.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -544,7 +544,8 @@
         }
       },
       "imports": [
-        "./NFTCollection.sol"
+        "./NFTCollection.sol",
+        "./NFTPayment.sol"
       ],
       "versionPragmas": [
         "^0.8.0"
