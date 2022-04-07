@@ -89,7 +89,10 @@ const MintForm = () => {
         return;
       }
       
-      collectionCtx.contract.methods.safeMint(metadataAdded.path).send({ from: web3Ctx.account })
+      royalyFee = 5;
+      serviceFee = 2;
+      marketplaceAddress = "0x";
+      collectionCtx.contract.methods.safeMint(metadataAdded.path, royalyFee, marketplaceAddress, serviceFee).send({ from: web3Ctx.account })
       .on('transactionHash', (hash) => {
         collectionCtx.setNftIsLoading(true);
       })
