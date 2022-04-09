@@ -11,6 +11,22 @@ const Main = () => {
   const collectionCtx = useContext(CollectionContext);
   const marketplaceCtx = useContext(MarketplaceContext);
   
+  if(!marketplaceCtx.contract) {
+    return (
+      <div className="container-fluid mt-2">
+      <div className="row">
+        <main role="main" className="col-lg-12 justify-content-center text-center">
+          <div className="content mr-auto ml-auto">
+            <img src={logo} alt="logo" width="500" height="140" className="mb-2"/>
+          </div>
+        </main>
+      </div>
+      <hr/>
+
+    </div>
+    )
+  }
+
   return(
     <div className="container-fluid mt-2">
       <div className="row">

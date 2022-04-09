@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "./NFTCollection.sol";
-import "./NFTPayment.sol";
 
 
 contract NFTMarketplace {
@@ -13,10 +12,10 @@ contract NFTMarketplace {
   uint public offerCount;
   mapping (uint => _Offer) public offers;
   mapping (address => uint) public userFunds;
-  mapping (address => uint) public userNetFunds;
+  mapping (address => uint) public royaltyFunds;
+  mapping (address => uint) public serviceFunds;
   
   NFTCollection nftCollection;
-  NFTPayment nftPayment;
   
   struct _Offer {
     uint offerId;
@@ -40,9 +39,7 @@ contract NFTMarketplace {
   event OfferCancelled(uint offerId, uint id, address owner);
   event ClaimFunds(address user, uint256 amount);
 
-  constructor(address _nftCollection, address _payments) {
-        nftPayment = NFTPayment(payable(_payments));
-        payments = payable(_payments);
+  constructor(address _nftCollection) {
         _tokenContractAddress = _nftCollection;
         nftCollection = NFTCollection(_nftCollection);
   }
@@ -65,15 +62,19 @@ contract NFTMarketplace {
     _offer.fulfilled = true;
 
     uint tokenId =_offer.id;
-    uint256 coFee = nftCollection.getCopyrightOwnerFee(tokenId);
-    uint256 mpFee = nftCollection.getMarketplaceFee(tokenId);  
+    address copyrightOwner = nftCollection.getCopyrightOwner(tokenId);
+    address marketplaceAccount = nftCollection.getMarketplace(tokenId);  
+    uint256 copyrightOwnerFee = nftCollection.getCopyrightOwnerFee(tokenId);
+    uint256 marketplaceFee = nftCollection.getMarketplaceFee(tokenId);  
     
     uint256 saleValue = msg.value;
-    uint256 feeAmount = (saleValue * (coFee + mpFee)) / (100 * 10**18);
-    uint256 netSaleValue = saleValue - feeAmount;
+    uint256 royaltyFeeAmount = (saleValue * (copyrightOwnerFee)) / (100 * 10**18);
+    uint256 serviceFeeAmount = (saleValue * (marketplaceFee)) / (100 * 10**18);
+    uint256 netSaleValue = saleValue - (royaltyFeeAmount + serviceFeeAmount);
   
     userFunds[_offer.user] += netSaleValue;
-    payable(payments).transfer(feeAmount);
+    royaltyFunds[copyrightOwner] += royaltyFeeAmount;
+    serviceFunds[marketplaceAccount] += serviceFeeAmount;
 
     emit OfferFilled(_offerId, _offer.id, msg.sender);
   }
@@ -95,6 +96,19 @@ contract NFTMarketplace {
     payable(msg.sender).transfer(userFunds[msg.sender]);
     emit ClaimFunds(msg.sender, userFunds[msg.sender]);
     userFunds[msg.sender] = 0;    
+  } 
+
+  function claimRoyaltyFunds() public {
+    require(royaltyFunds[msg.sender] > 0, 'This user has no royalties to be claimed');
+    payable(msg.sender).transfer(royaltyFunds[msg.sender]);
+    emit ClaimFunds(msg.sender, royaltyFunds[msg.sender]);
+    royaltyFunds[msg.sender] = 0;    
+  } 
+
+  function claimServiceFunds() public {
+    require(serviceFunds[msg.sender] > 0, 'This user has no service fees to be claimed');
+    emit ClaimFunds(msg.sender, serviceFunds[msg.sender]);
+    serviceFunds[msg.sender] = 0;    
   } 
 
   // Fallback: reverts if Ether is sent to this smart-contract by mistake

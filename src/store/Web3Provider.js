@@ -4,21 +4,27 @@ import Web3Context from './web3-context';
 
 const defaultWeb3State = {
   account: null,
-  networkId: null
+  networkId: null,
+  isNetworkSupported: false,
 };
+
+const supportedNetworks = [3, 25, 338];
 
 const web3Reducer = (state, action) => {
   if(action.type === 'ACCOUNT') {
     return {
       account: action.account,
-      networkId: state.networkId
+      networkId: state.networkId,
+      isNetworkSupported: supportedNetworks.includes(state.networkId)
     };
   } 
   
   if(action.type === 'NETWORKID') {
+
     return {
       account: state.account,
-      networkId: action.networkId
+      networkId: action.networkId,
+      isNetworkSupported: supportedNetworks.includes(action.networkId)
     };
   }
   
@@ -44,6 +50,7 @@ const Web3Provider = props => {
   const web3Context = {
     account:web3State.account,
     networkId: web3State.networkId,
+    isNetworkSupported: web3State.isNetworkSupported,
     loadAccount: loadAccountHandler,
     loadNetworkId: loadNetworkIdHandler
   };

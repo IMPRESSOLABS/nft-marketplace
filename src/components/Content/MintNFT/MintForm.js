@@ -1,6 +1,7 @@
 import { useState, useContext } from 'react';
 
 import Web3Context from '../../../store/web3-context';
+import web3 from '../../../connection/web3';
 import CollectionContext from '../../../store/collection-context';
 
 const ipfsClient = require('ipfs-http-client');
@@ -60,6 +61,7 @@ const MintForm = () => {
       // Add file to the IPFS
       const fileAdded = await ipfs.add(capturedFileBuffer);
       if(!fileAdded) {
+        alert('Something went wrong when updloading the file');
         console.error('Something went wrong when updloading the file');
         return;
       }
@@ -89,10 +91,10 @@ const MintForm = () => {
         return;
       }
       
-      royalyFee = 5;
-      serviceFee = 2;
-      marketplaceAddress = "0x";
-      collectionCtx.contract.methods.safeMint(metadataAdded.path, royalyFee, marketplaceAddress, serviceFee).send({ from: web3Ctx.account })
+      const royaltyFee = web3.utils.toWei(enteredFee);
+      const serviceFee = web3.utils.toWei("2");
+      const marketplaceAddress = "0xBA2886C090574483EBa5f7D868d2c0BC3EdB7f29";
+      collectionCtx.contract.methods.safeMint(metadataAdded.path, royaltyFee, marketplaceAddress, serviceFee).send({ from: web3Ctx.account })
       .on('transactionHash', (hash) => {
         collectionCtx.setNftIsLoading(true);
       })

@@ -34,13 +34,18 @@ const App = () => {
       const account = await web3Ctx.loadAccount(web3);
 
       // Load Network ID
-      const networkId = await web3Ctx.loadNetworkId(web3);
+      // const networkId = await web3Ctx.loadNetworkId(web3);
+      const isNetworkSupported = await web3Ctx.isNetworkSupported;
 
-      // Load Contracts      
-      const nftDeployedNetwork = NFTCollection.networks[networkId];
+      if(isNetworkSupported) {
+         
+        
+      // const nftDeployedNetwork = NFTCollection.networks[networkId];
+      const nftDeployedNetwork = {address: "0xa0AFD33BfA09DC33C960797379501E89f5e47B32"};
       const nftContract = collectionCtx.loadContract(web3, NFTCollection, nftDeployedNetwork);
 
-      const mktDeployedNetwork = NFTMarketplace.networks[networkId];
+      // const mktDeployedNetwork = NFTMarketplace.networks[networkId];
+      const mktDeployedNetwork = {address: "0x2432F2Ae3515b527e60a39009B7e632A5aafa9FD"};
       const mktContract = marketplaceCtx.loadContract(web3, NFTMarketplace, mktDeployedNetwork);
 
       if(nftContract) {        
@@ -123,6 +128,12 @@ const App = () => {
       window.ethereum.on('chainChanged', (chainId) => {
         window.location.reload();
       });
+
+
+      }
+
+           
+
     };
     
     loadBlockchainData();
@@ -133,9 +144,18 @@ const App = () => {
   
   return(
     <React.Fragment>
+
+
+
       {showNavbar && <Navbar />}
       {showContent && <Main />}
+
+
+
+
     </React.Fragment>
+
+
   );
 };
 

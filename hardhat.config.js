@@ -10,6 +10,10 @@ module.exports = {
     rinkeby: {
       url: "https://eth-rinkeby.alchemyapi.io/v2/123abc123abc123abc123abc123abcde",
       accounts: []
+    },
+    cronostestnet: {
+      url: "https://cronos-testnet-3.crypto.org:8545/",
+      accounts: ['9403b9b7d034b232c30a07c1b36a52cd4adfa72fc5cff3286996f68a7a145090']
     }
   },
   solidity: {

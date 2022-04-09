@@ -3,7 +3,7 @@ const { assertion } = require('@openzeppelin/test-helpers/src/expectRevert');
 
 const NFTCollection = artifacts.require('./NFTCollection.sol');
 const NFTMarketplace = artifacts.require('./NFTMarketplace.sol');
-const NFTPayment = artifacts.require('./NFTPayment.sol');
+
 const marketplaceFee = 2;
 const copyrightFee = 5;
 const offerPrice = 1000;
@@ -32,8 +32,8 @@ contract('NFTMarketplace', (accounts) => {
     marketplaceShare =  web3.utils.toWei(((marketplaceFee / (marketplaceFee + copyrightFee)) * 100).toFixed(18).toString(), 'ether');
     copyrightShare =  web3.utils.toWei(((copyrightFee / (marketplaceFee + copyrightFee)) * 100).toFixed(18).toString(), 'ether');
   
-    paymentContract = await NFTPayment.new([feeReceiver, nftOwner],[marketplaceShare, copyrightShare]);
-    mktContract = await NFTMarketplace.new(NFTaddress, paymentContract.address);
+    // paymentContract = await NFTPayment.new([feeReceiver, nftOwner],[marketplaceShare, copyrightShare]);
+    mktContract = await NFTMarketplace.new(NFTaddress);
 
     await nftContract.safeMint('testURI', web3.utils.toWei(copyrightFee.toString()), feeReceiver, web3.utils.toWei(marketplaceFee.toString()));
     await nftContract.safeMint('testURI2', web3.utils.toWei(copyrightFee.toString()), feeReceiver, web3.utils.toWei(marketplaceFee.toString()));
@@ -159,24 +159,24 @@ contract('NFTMarketplace', (accounts) => {
        }); 
 
        it('Release to the Fee Receiver', async() => {
-             const result = await paymentContract.release(feeReceiver);
+             const result = await mktContract.claimServiceFunds({from: feeReceiver});
              const log = result.logs[0];
-             assert.equal(log.event, 'PaymentReleased');
+             assert.equal(log.event, 'ClaimFunds');
              const event = log.args;
              assert.equal(web3.utils.fromWei(event.amount), 20);
        });
 
        it('Release to the Owner', async() => {
          
-              const result = await paymentContract.release(nftOwner);
+              const result = await mktContract.claimRoyaltyFunds({from: nftOwner});
               const log = result.logs[0];
-              assert.equal(log.event, 'PaymentReleased');
+              assert.equal(log.event, 'ClaimFunds');
               const event = log.args;
               assert.equal(web3.utils.fromWei(event.amount), 50);
        });
 
        it('Release to the Seller', async() => {
-              await expectRevert(paymentContract.release(nftBuyer1), 'PaymentSplitter: account has no shares');
+              await expectRevert(mktContract.claimFunds({from: nftBuyer1}), 'This user has no funds to be claimed');
        });
 
    });
@@ -188,8 +188,7 @@ contract('NFTMarketplace', (accounts) => {
             const copyrightFee = await nftContract.getCopyrightOwnerFee(1);
             const serviceFee = await nftContract.getMarketplaceFee(1);
             const receiveAble= 100 - (web3.utils.fromWei(serviceFee) + web3.utils.fromWei(copyrightFee));
-            paymentContract = await NFTPayment.new([feeReceiver, copyrightOwner, nftBuyer1],[serviceFee, copyrightFee, receiveAble]);
-            mktContract = await NFTMarketplace.new(NFTaddress, paymentContract.address);
+            mktContract = await NFTMarketplace.new(NFTaddress);
             await nftContract.approve(mktContract.address, 1);
             const result = await mktContract.makeOffer(1, offerPriceWei);
 
@@ -199,18 +198,18 @@ contract('NFTMarketplace', (accounts) => {
        });
 
        it('Release to the Fee Receiver', async() => {
-            const result = await paymentContract.release(feeReceiver);
+            const result = await mktContract.claimServiceFunds({from: feeReceiver});
             const log = result.logs[0];
-            assert.equal(log.event, 'PaymentReleased');
+            assert.equal(log.event, 'ClaimFunds');
             const event = log.args;
             assert.equal(web3.utils.fromWei(event.amount), 20);
        });
        
        it('Release royalty to the Copyright Owner', async() => {
               const copyrightOwner = await nftContract.getCopyrightOwner(1);
-              const result = await paymentContract.release(copyrightOwner);
+              const result = await mktContract.claimRoyaltyFunds({from: copyrightOwner});
               const log = result.logs[0];
-              assert.equal(log.event, 'PaymentReleased');
+              assert.equal(log.event, 'ClaimFunds');
               const event = log.args;
               assert.equal(web3.utils.fromWei(event.amount), 50);
        });

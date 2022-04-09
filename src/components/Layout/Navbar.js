@@ -5,12 +5,17 @@ import MarketplaceContext from '../../store/marketplace-context';
 import web3 from '../../connection/web3';
 import { formatPrice } from '../../helpers/utils';
 
-const Navbar = () => {
+const Navbar = async () => {
+
   const [fundsLoading, setFundsLoading] = useState(false);
   
   const web3Ctx = useContext(Web3Context);
-  const marketplaceCtx = useContext(MarketplaceContext);
+
+
   
+  const marketplaceCtx = useContext(MarketplaceContext);
+
+
   const connectWalletHandler = async() => {
     try {
       // Request account access
@@ -52,6 +57,10 @@ const Navbar = () => {
     etherscanUrl = 'https://rinkeby.etherscan.io'
   } else if(web3Ctx.networkId === 5) {
     etherscanUrl = 'https://goerli.etherscan.io'
+  } else if(web3Ctx.networkId === 25) {
+    etherscanUrl = 'https://cronos.org/explorer'
+  } else if(web3Ctx.networkId === 338) {
+    etherscanUrl = 'https://cronos.org/explorer/testnet3'
   } else {
     etherscanUrl = 'https://etherscan.io'
   }
