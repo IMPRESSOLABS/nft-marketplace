@@ -34,10 +34,9 @@ const App = () => {
       const account = await web3Ctx.loadAccount(web3);
 
       // Load Network ID
-      // const networkId = await web3Ctx.loadNetworkId(web3);
-      const isNetworkSupported = await web3Ctx.isNetworkSupported;
-
-      if(isNetworkSupported) {
+      const networkId = await web3Ctx.loadNetworkId(web3);
+      const networkSupported = await web3Ctx.loadNetworkSupported(web3);
+      // const isNetworkSupported = await web3Ctx.isNetworkSupported;
          
         
       // const nftDeployedNetwork = NFTCollection.networks[networkId];
@@ -130,7 +129,7 @@ const App = () => {
       });
 
 
-      }
+    
 
            
 
@@ -144,8 +143,6 @@ const App = () => {
   
   return(
     <React.Fragment>
-
-
 
       {showNavbar && <Navbar />}
       {showContent && <Main />}

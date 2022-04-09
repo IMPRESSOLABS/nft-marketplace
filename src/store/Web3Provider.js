@@ -27,6 +27,16 @@ const web3Reducer = (state, action) => {
       isNetworkSupported: supportedNetworks.includes(action.networkId)
     };
   }
+
+    
+  if(action.type === 'NETWORKSUPPORTED') {
+
+    return {
+      account: state.account,
+      networkId: action.networkId,
+      isNetworkSupported: supportedNetworks.includes(action.networkId)
+    };
+  }
   
   return defaultWeb3State;
 };
@@ -46,13 +56,21 @@ const Web3Provider = props => {
     dispatchWeb3Action({type: 'NETWORKID', networkId: networkId});
     return networkId;   
   };
+
+  
+  const loadNetworkSupportedHandler = async(web3) => {
+    const networkId = await web3.eth.net.getId();
+    dispatchWeb3Action({type: 'NETWORKSUPPORTED', networkId: networkId});
+    return supportedNetworks.includes(networkId);   
+  };
   
   const web3Context = {
     account:web3State.account,
     networkId: web3State.networkId,
     isNetworkSupported: web3State.isNetworkSupported,
     loadAccount: loadAccountHandler,
-    loadNetworkId: loadNetworkIdHandler
+    loadNetworkId: loadNetworkIdHandler,
+    loadNetworkSupported: loadNetworkSupportedHandler
   };
   
   return (
